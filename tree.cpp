@@ -4,6 +4,9 @@ Tree::Tree()
 {
     root = new Node();
     list = new QList<Node*>();
+    for(int i = 0; i < 256; ++i) {
+        this->codes.append(QByteArray());
+    }
 
 }
 
@@ -44,8 +47,8 @@ void Tree::buildTree(int bytes[])
         tmp->setFrequency(list->at(0)->getFrequency()+list->at(1)->getFrequency());
         tmp->setLeft(list->at(0));
         tmp->setRight(list->at(1));
-        list->pop_front();
-        list->pop_front();
+        list->removeFirst();
+        list->removeFirst();
         list->insert(position(tmp),tmp);
     }
     root = list->at(0);
@@ -109,14 +112,16 @@ void Tree::codification(Node *node, QString fileName)
         if (displace == 8)
         {
             code.append(byteAux2);
+//            qDebug() << code.toHex();
             byteAux2 = 0;
             displace = 0;
         }
     }
 
-    if (displace < 7)
+//    qDebug() << displace << code.toHex();
+    if (displace < 8)
         code.append(byteAux2);
-
+//    qDebug() << displace << code.toHex();
     codeArray.clear();
     codeArray.append(code);
 
@@ -164,14 +169,13 @@ QByteArray Tree::trashAndTreeSize()
                 byte = 0;
             }
         }
-        if (displace < 7)
+        if (displace < 8)
             ret.append(byte);
 
     } else {
         ret.clear();
         ret.append((unsigned char)byte).append(representation.size());
     }
-
     return ret;
 }
 
@@ -180,7 +184,6 @@ void Tree::rebuilder(QByteArray rep, Node* node)
 {
     QStack<Node*> stack;
     stack.push(node);
-
     for (int i = 0; i < rep.size(); i++)
     {
         Node* newNode;
@@ -260,7 +263,6 @@ unsigned int Tree::countLeaf(Node *node)
 
 void Tree::bubbleSort()
 {
-
     for (int i = 0; i < list->size(); i++){
         for (int j = i+1; j < list->size(); ++j){
             if (list->at(i)->getFrequency() > list->at(j)->getFrequency()){
@@ -291,14 +293,13 @@ int Tree::position(Node *node) const
 void Tree::encodeHelper(Node *node, QByteArray code){
     if (node->isLeaf()){
         node->setCode(code);
-        codes[(unsigned char) node->getContent()] = node->getCode();
-        code.clear();
+        qDebug() << (char) node->getContent() << node->getCode().toHex();
+        codes.replace((unsigned char) node->getContent(), node->getCode());
     } else {
-        code.append((char) 0);
-        encodeHelper(node->getLeft(),code);
-        code.remove(code.size()-1,1);
-        code.append(1);
-        encodeHelper(node->getRight(),code);
+        QByteArray leftCode = code;
+        QByteArray rightCode = code;
+        encodeHelper(node->getLeft(), leftCode.append((char) 0));
+        encodeHelper(node->getRight(), rightCode.append(1));
     }
 }
 
