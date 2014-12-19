@@ -14,7 +14,7 @@ class Tree
     QList<Node*>* list;
     Node* root;
     QString representation;
-    QByteArray codes[256];
+    QList<QByteArray> codes;
     QByteArray codeArray;
     char sizeTrash;
 
